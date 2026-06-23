@@ -1,0 +1,13 @@
+name: K3D Deploy Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  placeholder:
+    name: Placeholder until Helm chart is ready
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Information
+        run: echo "K3D deployment test will be implemented after the Helm chart is ready."
