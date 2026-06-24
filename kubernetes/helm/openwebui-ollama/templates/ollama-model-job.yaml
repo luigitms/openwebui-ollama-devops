@@ -1,0 +1,44 @@
+{{- if .Values.modelInit.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "openwebui-ollama.fullname" . }}-model-init
+  labels:
+    {{- include "openwebui-ollama.labels" . | nindent 4 }}
+    app.kubernetes.io/component: model-init
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "openwebui-ollama.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: model-init
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: model-init
+          image: "{{ .Values.ollama.image.repository }}:{{ .Values.ollama.image.tag }}"
+          imagePullPolicy: {{ .Values.ollama.image.pullPolicy }}
+          env:
+            - name: OLLAMA_HOST
+              value: "http://{{ include "openwebui-ollama.fullname" . }}-ollama:{{ .Values.ollama.service.port }}"
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for Ollama API..."
+              until ollama list; do
+                echo "Ollama is not ready yet..."
+                sleep 5
+              done
+
+              echo "Pulling model: {{ .Values.ollama.model }}"
+              ollama pull {{ .Values.ollama.model }}
+
+              echo "Available models:"
+              ollama list
+{{- end }}

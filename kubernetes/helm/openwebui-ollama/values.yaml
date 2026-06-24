@@ -1,0 +1,41 @@
+nameOverride: ""
+fullnameOverride: ""
+
+openwebui:
+  image:
+    repository: ghcr.io/open-webui/open-webui
+    tag: main
+    pullPolicy: IfNotPresent
+
+  replicaCount: 1
+
+  service:
+    type: ClusterIP
+    port: 8080
+
+  persistence:
+    enabled: true
+    size: 5Gi
+
+  auth: "true"
+
+ollama:
+  image:
+    repository: ollama/ollama
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  replicaCount: 1
+
+  service:
+    type: ClusterIP
+    port: 11434
+
+  persistence:
+    enabled: true
+    size: 10Gi
+
+  model: llama3.2:1b
+
+modelInit:
+  enabled: true

@@ -1,0 +1,10 @@
+openwebui:
+  service:
+    type: ClusterIP
+    port: 8080
+
+ollama:
+  model: llama3.2:1b
+
+modelInit:
+  enabled: true

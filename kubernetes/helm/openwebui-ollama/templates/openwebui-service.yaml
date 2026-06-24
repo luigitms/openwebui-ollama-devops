@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "openwebui-ollama.fullname" . }}-openwebui
+  labels:
+    {{- include "openwebui-ollama.labels" . | nindent 4 }}
+    app.kubernetes.io/component: openwebui
+spec:
+  type: {{ .Values.openwebui.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.openwebui.service.port }}
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{ include "openwebui-ollama.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: openwebui

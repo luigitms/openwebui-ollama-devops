@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "openwebui-ollama.fullname" . }}-openwebui
+  labels:
+    {{- include "openwebui-ollama.labels" . | nindent 4 }}
+    app.kubernetes.io/component: openwebui
+spec:
+  replicas: {{ .Values.openwebui.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "openwebui-ollama.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: openwebui
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "openwebui-ollama.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: openwebui
+    spec:
+      containers:
+        - name: openwebui
+          image: "{{ .Values.openwebui.image.repository }}:{{ .Values.openwebui.image.tag }}"
+          imagePullPolicy: {{ .Values.openwebui.image.pullPolicy }}
+          ports:
+            - containerPort: 8080
+          env:
+            - name: OLLAMA_BASE_URL
+              value: "http://{{ include "openwebui-ollama.fullname" . }}-ollama:{{ .Values.ollama.service.port }}"
+            - name: WEBUI_AUTH
+              value: "{{ .Values.openwebui.auth }}"
+          volumeMounts:
+            - name: openwebui-data
+              mountPath: /app/backend/data
+      volumes:
+        - name: openwebui-data
+          persistentVolumeClaim:
+            claimName: {{ include "openwebui-ollama.fullname" . }}-openwebui-data
