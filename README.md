@@ -194,6 +194,8 @@ Captures principales :
 10-kubernetes-port-forward-localhost-3001.png
 11-openwebui-kubernetes-localhost-3001.png
 12-ollama-model-available-in-kubernetes.png
+13-github-actions-ci-success.png
+14-github-actions-k3d-deploy-test-success.png
 ```
 
 ---
@@ -242,7 +244,7 @@ k3d cluster delete openwebui-local
 * [x] Ajouter le chart Helm
 * [x] Ajouter le déploiement Kubernetes local
 * [x] Ajouter les captures d’écran
-* [ ] Ajouter GitHub Actions
+* [x] Ajouter GitHub Actions
 * [ ] Rédiger le README final complet
 * [ ] Préparer une V2 cloud AWS
 
