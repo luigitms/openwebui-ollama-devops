@@ -17,7 +17,6 @@ name: Deploy Helm chart on k3d
 runs-on: ubuntu-latest
 timeout-minutes: 30
 
-```
 steps:
   - name: Checkout repository
     uses: actions/checkout@v4
@@ -85,5 +84,4 @@ steps:
 
   - name: Cleanup k3d cluster
     if: always()
-    run: k3d cluster delete openwebui-ci
-```
+    run: k3d cluster delete openwebui-cia
