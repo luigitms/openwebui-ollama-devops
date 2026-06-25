@@ -13,20 +13,31 @@ on:
 
 jobs:
   validate:
-    name: Validate project files
+    name: Validate Docker Compose and Helm
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Validate Docker Compose file
-        run: docker compose -f docker-compose.yml config
-
       - name: Check repository structure
         run: |
           test -f README.md
           test -f docker-compose.yml
-          test -d kubernetes
-          test -d scripts
+          test -f .env.example
+          test -d kubernetes/helm/openwebui-ollama
           test -d screenshots
+
+      - name: Validate Docker Compose file
+        run: docker compose -f docker-compose.yml config
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Helm lint
+        run: helm lint ./kubernetes/helm/openwebui-ollama
+
+      - name: Helm template rendering
+        run: |
+          helm template openwebui ./kubernetes/helm/openwebui-ollama \
+            -f ./kubernetes/helm/openwebui-ollama/values-local.yaml

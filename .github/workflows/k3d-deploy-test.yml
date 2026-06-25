@@ -1,13 +1,75 @@
 name: K3D Deploy Test
 
 on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
   workflow_dispatch:
 
 jobs:
-  placeholder:
-    name: Placeholder until Helm chart is ready
+  k3d-deploy:
+    name: Deploy Helm chart on k3d
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
-      - name: Information
-        run: echo "K3D deployment test will be implemented after the Helm chart is ready."
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Install k3d
+        run: |
+          curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+          k3d version
+
+      - name: Create k3d cluster
+        run: |
+          k3d cluster create openwebui-ci --agents 1
+          kubectl get nodes
+
+      - name: Helm lint
+        run: helm lint ./kubernetes/helm/openwebui-ollama
+
+      - name: Deploy chart with Helm without model init
+        run: |
+          helm upgrade --install openwebui ./kubernetes/helm/openwebui-ollama \
+            -n openwebui \
+            --create-namespace \
+            -f ./kubernetes/helm/openwebui-ollama/values-local.yaml \
+            --set modelInit.enabled=false \
+            --timeout 10m
+
+      - name: Wait for deployments
+        run: |
+          kubectl rollout status deployment/openwebui-ollama-ollama -n openwebui --timeout=300s
+          kubectl rollout status deployment/openwebui-ollama-openwebui -n openwebui --timeout=300s
+
+      - name: Show Kubernetes resources
+        run: |
+          kubectl get pods -n openwebui
+          kubectl get svc -n openwebui
+          kubectl get pvc -n openwebui
+          helm list -n openwebui
+
+      - name: Test Open WebUI service DNS inside cluster
+        run: |
+          kubectl run curl-test \
+            -n openwebui \
+            --image=curlimages/curl:latest \
+            --restart=Never \
+            --rm -i \
+            --command -- curl -I http://openwebui-ollama-openwebui:8080
+
+      - name: Cleanup k3d cluster
+        if: always()
+        run: k3d cluster delete openwebui-ci
